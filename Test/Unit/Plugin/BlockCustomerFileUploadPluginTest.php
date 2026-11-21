@@ -6,6 +6,7 @@ namespace Aregowe\PolyShellProtection\Test\Unit\Plugin;
 
 use Magento\Customer\Model\FileProcessor;
 use Magento\Framework\Exception\LocalizedException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Aregowe\PolyShellProtection\Logger\Logger;
@@ -14,6 +15,8 @@ use Aregowe\PolyShellProtection\Plugin\BlockCustomerFileUploadPlugin;
 
 class BlockCustomerFileUploadPluginTest extends TestCase
 {
+    use ThrowsOnDeprecationTrait;
+
     private BlockCustomerFileUploadPlugin $plugin;
 
     /** @var Logger&MockObject */
@@ -21,6 +24,7 @@ class BlockCustomerFileUploadPluginTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->throwOnDeprecation(\Aregowe\PolyShellProtection\Plugin\BlockCustomerFileUploadPlugin::class, 'entityTypeCodeProperty');
         $this->logger = $this->createMock(Logger::class);
         $sanitizer = new SecurityLogSanitizer();
 
@@ -33,6 +37,7 @@ class BlockCustomerFileUploadPluginTest extends TestCase
     /**
      * @dataProvider blockedEntityTypeProvider
      */
+    #[DataProvider('blockedEntityTypeProvider')]
     public function testSaveTemporaryFileBlockedForDangerousEntityTypes(string $entityType): void
     {
         $subject = $this->createFileProcessorWithEntityType($entityType);
@@ -53,6 +58,7 @@ class BlockCustomerFileUploadPluginTest extends TestCase
     /**
      * @dataProvider blockedEntityTypeProvider
      */
+    #[DataProvider('blockedEntityTypeProvider')]
     public function testMoveTemporaryFileBlockedForDangerousEntityTypes(string $entityType): void
     {
         $subject = $this->createFileProcessorWithEntityType($entityType);
@@ -106,7 +112,6 @@ class BlockCustomerFileUploadPluginTest extends TestCase
             // so test the isBlockedEntityType logic via the public method behavior.
             // For the mock, we'll set the property on the mock object.
             $prop = $reflection->getProperty('entityTypeCode');
-            $prop->setAccessible(true);
             $prop->setValue($subject, $entityTypeCode);
         }
 
